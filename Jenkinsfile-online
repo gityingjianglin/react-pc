@@ -1,0 +1,150 @@
+def createVersion() {
+    // 定义一个版本号作为当次构建的版本，输出结果 20220517-175842_69
+    return new Date().format('yyyyMMdd-HHmmss') + "-${env.BUILD_ID}"
+}
+def createTag(){
+    // 定义一个版本号作为当次tag版本，输出结果 v.20220517_69
+    return "v." + new Date().format('yyyyMMdd') + "-${env.BUILD_ID}"
+}
+
+pipeline {
+  agent {
+    node {
+      label 'nodejs'
+    }
+  }
+
+  parameters {
+      //string(name:'TAG_NAME',defaultValue: '',description:'')
+      string(name:'PROD_OPT_USER',defaultValue: '',description:'如需发布生产，请输入工号。')
+  }
+
+  environment {
+      DOCKER_CREDENTIAL_ID = 'dockerhub-id'
+      GITHUB_CREDENTIAL_ID = 'gitlab-id'
+      KUBECONFIG_CREDENTIAL_ID = 'kubeconfig-id'
+      KUBECONFIG_CREDENTIAL_PRD_ID = 'kubeconfig-prd-id'
+      REGISTRY = 'harbor-test.haier.net'
+      DOCKERHUB_NAMESPACE = 'wlgx'
+      GITHUB_ACCOUNT = 'root-robot'
+      CUR_VERSION = createVersion()
+      TAG_NAME = createTag()
+      
+      // 工程的git仓库克隆地址，注意去掉'http://'
+      GIT_CLONE_URL = 'git.haierfintech.xin/digital-manage/yingkang-oa/client-yingkangoa.git'
+      // 应用名称，取git仓库的项目标识串
+      APP_NAME = 'client-yingkangoa'
+      // 在paas平台devops工程里面创建项目同名凭证，凭证保存的是sonarqube的token，需提前找运维在sonarQube创建项目和token
+      SONAR_CREDENTIAL_ID = 'client-yingkangoa'
+  }
+
+  stages {
+    stage ('检出最新源码') {
+        steps {
+            checkout(scm)
+        }
+    }
+    stage('源码扫描分析') {
+      steps {
+        script {//执行scanner要包在script块里面
+          withCredentials([string(credentialsId: "$SONAR_CREDENTIAL_ID", variable: 'SONAR_TOKEN')]) {
+            def scannerHome = tool 'SonarQube-Scanner-4.7.0'; //指定在Jenkins配置的sonar-scanner 工具
+            withSonarQubeEnv('sonarqube') {
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${SONAR_CREDENTIAL_ID}"
+            }
+          }
+          timeout(time: 1, unit: 'HOURS') {
+            waitForQualityGate abortPipeline: true
+          }
+        }
+      }
+    }
+
+
+	stage('使用cnpm进行install更新依赖') {
+		steps {
+			container('nodejs') {
+        /* //安装cnpm
+        sh 'npm install -g cnpm@7.1.1 --registry=https://registry.npm.taobao.org'
+        // 使用淘宝镜像
+        sh 'npm config set registry https://registry.npm.taobao.org'
+        //使用cnpm进行install更新依赖
+        sh 'cnpm i --no-package-lock' */
+        sh 'npm i nrm -g && nrm add haier http://npm.haier.net/ && nrm use haier'
+        sh 'npm i --no-package-lock'
+			}
+
+		}
+	}
+
+    stage ('编译 & 推送镜像') {
+        steps {
+            container ('nodejs') {
+                sh 'npm run build --uat'
+                sh 'docker build -f Dockerfile-online -t $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$CUR_VERSION .'
+                withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$DOCKER_CREDENTIAL_ID" ,)]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
+                    sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$CUR_VERSION'
+                }
+            }
+        }
+    }
+
+    stage('推送latest版本'){
+        when{
+          branch 'master'
+        }
+        steps{
+            container ('nodejs') {
+              sh 'docker tag  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$CUR_VERSION $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:latest '
+              sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:latest '
+            }
+        }
+    }
+
+    stage('部署到dev环境') {
+      when{
+        branch 'master'
+      }
+      steps {
+        // input(id: 'deploy-to-dev', message: '@19000579  部署dev审核')
+        kubernetesDeploy(configs: 'deploy-svc.yaml', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_ID")
+      }
+    }
+    stage('推送tag'){
+      when{
+        expression{
+          // return params.TAG_NAME =~ /v.*/
+          // 匹配8位工号，可以是一个字母开头，后7位必须是数字
+          return params.PROD_OPT_USER =~ /(^[a-zA-Z]{1}|^\d{1})\d{7}$/
+        }
+      }
+      steps {
+          container ('nodejs') {
+            input(id: 'release-image-with-tag', message: '推送tag版本及镜像?')
+              withCredentials([usernamePassword(credentialsId: "$GITHUB_CREDENTIAL_ID", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                sh 'git config --global user.email "libiao@haier.com" '
+                sh 'git config --global user.name "root-robot" '
+                sh 'git tag -a $TAG_NAME -m "$TAG_NAME" '
+                sh 'git push http://$GIT_USERNAME:$GIT_PASSWORD@$GIT_CLONE_URL --tags --ipv4'
+              }
+            sh 'docker tag  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$CUR_VERSION $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
+            sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
+      }
+      }
+    }
+    stage('部署到production环境') {
+      when{
+        expression{
+          // return params.TAG_NAME =~ /v.*/
+          // 匹配8位工号，可以是一个字母开头，后7位必须是数字
+          return params.PROD_OPT_USER =~ /(^[a-zA-Z]{1}|^\d{1})\d{7}$/
+        }
+      }
+      steps {
+        input(id: 'deploy-to-production', message: '部署到生产环境?')
+        kubernetesDeploy(configs: 'deploy-svc-prd.yaml', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_PRD_ID")
+      }
+    }
+  }
+}

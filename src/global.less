@@ -1,0 +1,604 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+button {
+  overflow: visible;
+  -webkit-appearance: button;
+  outline: none;
+  border: none;
+  text-transform: none;
+}
+/* common */
+html, body {
+  height: 100%;
+}
+body {
+  //font-size: 12px;
+  //background-color: #f5f5f5;
+  //color: #000;
+  // font-size: 52.09px;
+}
+.fb {
+  font-weight: bold;
+}
+.img-fit {
+  max-width: 100%;
+}
+/* spinner */
+.pulldown-wrapper {
+  position: absolute;
+  width: 100%;
+  padding: 20px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transform: translateY(-100%) translateZ(0);
+  transform: translateY(-100%) translateZ(0);
+  text-align: center;
+  color: #999;
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  background-color: #67CF22;
+
+  margin: 0;
+  -webkit-animation: rotateplane 1.2s infinite ease-in-out;
+  animation: rotateplane 1.2s infinite ease-in-out;
+}
+
+@-webkit-keyframes rotateplane {
+  0% { -webkit-transform: perspective(120px) }
+  50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+  100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+}
+
+@keyframes rotateplane {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+  } 50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+  } 100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}
+.spinner-loading {
+  .spinner {
+    margin-right: 5px;
+  }
+}
+/* 扩大点击区域 */
+.spread-click {
+  position: relative;
+}
+.spread-click:before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  bottom: -5px;
+  right: -5px;
+  padding: 5px;
+}
+
+/* flex盒模型布局 */
+/*水平布局*/
+.h-view {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -moz-box-orient: horizontal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+/*垂直布局*/
+.v-view {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
+/* 盒子自适应换行 */
+.flex-wrap {
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.flex-nowrap {
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+}
+
+.flex-shrink {
+  flex-shrink: 0;
+}
+
+/*设置或检索弹性盒子元素在侧轴（纵轴）方向上的对齐方式。*/
+/*弹性盒子元素的侧轴（纵轴）起始位置的边界紧靠住该行的侧轴起始边界。*/
+.align-start {
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  -webkit-align-items: flex-start;
+  -moz-align-items: flex-start;
+  align-items: flex-start;
+}
+
+/*弹性盒子元素在该行的侧轴（纵轴）上居中放置。（如果该行的尺寸小于弹性盒子元素的尺寸，则会向两个方向溢出相同的长度）。*/
+.align-center {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  -moz-align-items: center;
+  align-items: center
+}
+
+/*弹性盒子元素的侧轴（纵轴）起始位置的边界紧靠住该行的侧轴结束边界。*/
+.align-end {
+  -webkit-box-align: end;
+  -ms-flex-align: end;
+  -webkit-align-items: flex-end;
+  -moz-align-items: flex-end;
+  align-items: flex-end
+}
+
+/*如弹性盒子元素的行内轴与侧轴为同一条，则该值与'flex-start'等效。其它情况下，该值将参与基线对齐。*/
+.align-baseline {
+  -webkit-box-align: baseline;
+  -ms-flex-align: baseline;
+  -webkit-align-items: baseline;
+  -moz-align-items: baseline;
+  align-items: baseline
+}
+
+/*如果指定侧轴大小的属性值为'auto'，则其值会使项目的边距盒的尺寸尽可能接近所在行的尺寸，但同时会遵照'min/max-width/height'属性的限制。*/
+.align-stretch {
+  -webkit-box-align: stretch;
+  -moz-box-align: stretch;
+  -ms-flex-align: stretch;
+  -webkit-align-items: stretch;
+  align-items: stretch
+}
+
+/*设置或检索弹性盒子元素在主轴（横轴）方向上的对齐方式。*/
+/*弹性盒子元素将向行起始位置对齐。该行的第一个子元素的主起始位置的边界将与该行的主起始位置的边界对齐，同时所有后续的伸缩盒项目与其前一个项目对齐。*/
+.justify-start {
+  -webkit-box-pack: start;
+  -moz-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start
+}
+
+/*弹性盒子元素将向行结束位置对齐。该行的第一个子元素的主结束位置的边界将与该行的主结束位置的边界对齐，同时所有后续的伸缩盒项目与其前一个项目对齐。*/
+.justify-center {
+  -webkit-box-pack: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center
+}
+
+/*弹性盒子元素将向行中间位置对齐。该行的子元素将相互对齐并在行中居中对齐，同时第一个元素与行的主起始位置的边距等同与最后一个元素与行的主结束位置的边距（如果剩余空间是负数，则保持两端相等长度的溢出）。*/
+.justify-end {
+  -webkit-box-pack: end;
+  -moz-box-pack: end;
+  -ms-flex-pack: end;
+  -webkit-justify-content: flex-end;
+  justify-content: flex-end
+}
+
+/*弹性盒子元素会平均地分布在行里。如果最左边的剩余空间是负数，或该行只有一个子元素，则该值等效于'flex-start'。在其它情况下，第一个元素的边界与行的主起始位置的边界对齐，同时最后一个元素的边界与行的主结束位置的边距对齐，而剩余的伸缩盒项目则平均分布，并确保两两之间的空白空间相等。*/
+.justify-space-between {
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+/*
+平分父容器 弹性盒子元素会平均地分布在行里，两端保留子元素与子元素之间间距大小的一半。如果最左边的剩余空间是负数，或该行只有一个伸缩盒项目，则该值等效于'center'。在其它情况下，伸缩盒项目则平均分布，并确保两两之间的空白空间相等，同时第一个元素前的空间以及最后一个元素后的空间为其他空白空间的一半。
+*/
+.justify-space-around {
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  -webkit-justify-content: space-around;
+  justify-content: space-around
+}
+
+/*等宽度对齐flex1*/
+.flex1 {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
+}
+
+.flex2 {
+  -webkit-box-flex: 2;
+  -moz-box-flex: 2;
+  -ms-flex: 2;
+  -webkit-flex: 2;
+  flex: 2;
+}
+
+.flex3 {
+  -webkit-box-flex: 3;
+  -moz-box-flex: 3;
+  -ms-flex: 3;
+  -webkit-flex: 3;
+  flex: 3;
+}
+
+// 标题样式
+.ModuleTitle {
+  .title-select {
+    width: 1.2rem;
+  }
+  .el-select {
+    margin-right: 0.12rem;
+    &:hover {
+      .el-input__inner {
+        border-color: #315f87;
+      }
+    }
+  }
+  .infected-patch-select {
+    width: 1.3rem;
+    .el-input {
+      width: 1.3rem;
+    }
+  }
+  .point-info-select {
+    width: 2rem;
+    .el-input {
+      width: 2rem;
+    }
+  }
+  .el-input {
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 0.32rem;
+    .el-input__inner {
+      //box-sizing: border-box;
+      //display: flex;
+      //justify-content: center;
+      height: 0.32rem;
+      padding: 0 0.3rem 0 0.16rem;
+      font-size: 0.16rem;
+      line-height: 0.32rem;
+      //text-align: center;
+      color: #FFFFFF;
+      //border: solid 0.01rem #315f87;
+      border-radius: 0;
+      border-color: #315f87;
+      background-color: #022643;
+    }
+    .el-input__suffix {
+      box-sizing: border-box;
+      width: 0.33rem;
+      height: 0.3rem;
+      margin-top: 0.01rem;
+      right: 0;
+      border-left: solid 0.01rem #315f87;
+      .el-input__icon {
+        line-height: 0.32rem;
+        color: #52c2f0;
+        font-size: 0.2rem;
+        font-weight: bold;
+        //display: none;
+      }
+      .el-input__suffix-inner {
+        //display: none;
+        //background: url("~@/assets/images/icon/triangle.png") no-repeat;
+        //background-size: 0.11rem 0.09rem;
+      }
+    }
+  }
+  .el-radio {
+    width: 0.93rem;
+    color: #235775;
+    margin-right: 0.24rem;
+    .el-radio-group {
+      align-items: center;
+    }
+    .el-radio__inner {
+      width: 0.16rem;
+      height: 0.16rem;
+      border: none;
+      background-color: #022643;
+    }
+    .el-radio__input.is-checked .el-radio__inner {
+      width: 0.2rem;
+      height: 0.2rem;
+      background-color: #022643;
+      border: solid 0.03rem #305d85;
+      border-radius: 50%;
+    }
+    .el-radio__input.is-checked+.el-radio__label {
+      color: #1cd6ff;
+    }
+    .el-radio__inner::after {
+      width: 0.08rem;
+      height: 0.08rem;
+      background-color: #1cd6ff;
+    }
+    .el-radio__label {
+      font-size: 0.14rem;
+    }
+  }
+}
+.el-select-dropdown {
+  min-height: 2rem !important;
+  // top: 0.32rem !important;
+  border-radius: 0 !important;
+  background-color:  #022643 !important;
+  border: solid 1px #315f87 !important;
+  .el-select-dropdown__wrap {
+    background-color: #022643;
+  }
+  ::-webkit-scrollbar-track-piece {
+    background-color: #022643;
+  }
+  .popper__arrow {
+    border-bottom-color: #315f87 !important;
+  }
+  .popper__arrow::after {
+    border-bottom-color: #022643 !important;
+  }
+  .el-select-dropdown__item {
+    height: 0.42rem;
+    line-height: 0.42rem;
+    color: #FFFFFF;
+  }
+  .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
+    background-color: #315f87;
+  }
+}
+
+// 检验组件样式
+.ExamineModule {
+  .is-horizontal {
+    display: none;
+  }
+  .el-scrollbar__wrap {
+    overflow-x: hidden;
+  }
+}
+.detail-scroll {
+  .is-horizontal {
+    display: none;
+  }
+  .el-scrollbar__wrap {
+    overflow-x: hidden;
+  }
+}
+// 弹窗样式
+.ExamineModule-popper.el-popover {
+  width: 6.5rem !important;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-top: 0.1rem !important;
+  .popper__arrow {
+    display: none;
+  }
+}
+.examineName-popper.el-popover {
+  padding: 5px;
+  background-color: rgba(0,0,0,0.8);
+  border: none;
+  border-radius: none;
+  color: #FFFFFF;
+  .popper__arrow::after {
+    border-top-color: rgba(0,0,0,0.8) !important;
+  }
+  .popper__arrow {
+    border-top-color: rgba(0,0,0,0.8) !important;
+  }
+}
+.CheckModule-popper.el-popover {
+  width: 6.25rem !important;
+  height: 6.25rem !important;
+  background-color: #032541;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  .popper__arrow {
+    display: none;
+  }
+  .is-horizontal {
+    display: none;
+  }
+  .el-scrollbar__wrap {
+    overflow-x: hidden;
+  }
+}
+// loading
+.el-loading-mask {
+  //background-color: rgba(255,255,255,.1) !important;
+  background-color: transparent !important;
+  .el-loading-spinner {
+    margin-top: 0;
+    transform: translateY(-60%);
+  }
+  .el-loading-spinner .path {
+    stroke-width: 6;
+  }
+}
+
+.human-body, .home-page {
+  .el-scrollbar__wrap {
+    overflow-x: hidden;
+  }
+}
+
+.patient-information-select {
+  width: 2.7rem;
+  display: block !important;
+  .el-input {
+    box-sizing: border-box;
+    width: 2.7rem;
+    height: 0.32rem;
+    .el-input__inner {
+      //box-sizing: border-box;
+      //display: flex;
+      //justify-content: center;
+      height: 0.32rem;
+      padding: 0 0.3rem 0 0.16rem;
+      font-size: 0.16rem;
+      line-height: 0.32rem;
+      //text-align: center;
+      color: #FFFFFF;
+      //border: solid 0.01rem #315f87;
+      border-radius: 0;
+      border-color: #315f87;
+      background-color: #022643;
+    }
+    .el-input__suffix {
+      box-sizing: border-box;
+      width: 0.33rem;
+      height: 0.3rem;
+      margin-top: 0.01rem;
+      right: 0;
+      border-left: solid 0.01rem #315f87;
+      .el-input__icon {
+        line-height: 0.32rem;
+        color: #52c2f0;
+        font-size: 0.2rem;
+        font-weight: bold;
+        //display: none;
+      }
+      .el-input__suffix-inner {
+        //display: none;
+        //background: url("~@/assets/images/icon/triangle.png") no-repeat;
+        //background-size: 0.11rem 0.09rem;
+      }
+    }
+  }
+}
+// messageBox
+.el-message {
+  min-width: 2rem !important;
+  padding: 0.15rem 0.15rem 0.15rem 0.2rem !important;
+  .el-message__icon {
+    line-height: 0.3rem !important;
+  }
+  .el-message__icon::before {
+    display: block;
+    font-size: 0.2rem;
+  }
+}
+
+// 弹框
+.rehabilitation-dialog {
+  width: 8.74rem!important;
+  margin-top: 50px!important;
+  background-color: #082d46!important;
+  .el-dialog__header {
+    padding: 0;
+    //display: none;
+  }
+  .el-dialog__body {
+    //padding: 0 0.14rem 0.3rem 0.14rem;
+    padding: 0 0 0.3rem 0;
+  }
+  .el-dialog__headerbtn {
+    display: none;
+  }
+  .close-box {
+    position: absolute;
+    top: 0.08rem;
+    right: 0.08rem;
+    width: 0.26rem;
+    height: 0.26rem;
+    z-index: 10;
+    cursor: pointer;
+    img {
+      width: 0.26rem;
+      height: 0.26rem;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .icon-close-hover {
+      display: none;
+    }
+    &:hover {
+      .icon-close-hover {
+        display: block;
+      }
+      .icon-close {
+        display: none;
+      }
+    }
+  }
+  thead tr, tbody tr {
+    font-size: 0.14rem;
+    color: #95c5db;
+    border-color: #0b658e;
+  }
+  tbody tr td {
+    color: #1fcdff;
+    .cell {
+      text-align: center;
+    }
+  }
+  tbody tr td:first-child {
+    color: #fff;
+    .cell {
+      text-align: left;
+    }
+  }
+  th.el-table__cell {
+    text-align: center;
+    //border-color: #0b658e;
+  }
+  .el-table--border::after, .el-table--group::after, .el-table::before {
+    background-color: #0b658e;
+  }
+  .el-table__cell, .el-table--border, .el-table--group {
+    border-color: #0b658e!important;
+  }
+  thead tr:nth-child(2n-1), tbody tr:nth-child(2n-1) {
+    .el-table__cell {
+      background-color: #061e33!important;
+    }
+  }
+  .el-table__body-wrapper {
+    background-color: #082d46;
+  }
+  thead tr:nth-child(2n), tbody tr:nth-child(2n) {
+    .el-table__cell {
+      background-color: #082d46!important;
+    }
+  }
+}
+
+// 康复评定弹框文字提示
+.point-content-box {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.8) !important;
+  .popper__arrow::after, .popper__arrow {
+    border-top-color: rgba(0, 0, 0, 0.8) !important;
+  }
+}

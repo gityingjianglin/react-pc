@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: fcredit-bi
+  namespace: fcredit
+subsets:
+  - addresses:
+      # 代理ip
+      - ip: 10.133.52.10
+    ports:
+      # 代理的端口
+      - port: 8080
+        #protocol: TCP
+        name: fcredit-bi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  # 这里的名称要和endpoints一样才能关联
+  name: fcredit-bi
+  namespace: fcredit
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      #protocol: TCP
+      name: fcredit-bi

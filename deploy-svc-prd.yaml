@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: # 当前deployment的标签，提供给service进行选择
+    app: yingkang-oa #项目/应用名称，取git仓库分组的标识串
+    component: client-yingkangoa #模块/所属分组
+    tier: frontend #按照部署架构层的分类，比如前端、后端、网关等
+  name: client-yingkangoa #当前工程名称，取git仓库的项目标识串
+  namespace: yingkang-oa #项目的命名空间，取git仓库分组的标识串
+spec:
+  progressDeadlineSeconds: 600 #升级过程最大时间
+  replicas: 2 #部署的副本数量
+  selector: 
+    matchLabels: #labels标签选择器，用以选择符合标签的容器实例
+      app: yingkang-oa
+      component: client-yingkangoa
+      tier: frontend
+  template:
+    metadata: 
+      labels: #容器的标签，用以选择符合标签的容器实例
+        app: yingkang-oa
+        component: client-yingkangoa
+        tier: frontend
+    spec:
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
+      containers:
+        - env:
+            - name: CACHE_IGNORE
+              value: js|html
+            - name: CACHE_PUBLIC_EXPIRATION
+              value: 3d
+          # 这里的镜像版本，是根据pipeline里面的环境变量拼接的。
+          #image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$CUR_VERSION
+          image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME
+          readinessProbe: #健康检查
+            tcpSocket: #检查方式
+              port: 80 #检查端口
+            timeoutSeconds: 10 #检查超时
+            failureThreshold: 30 #检查次数
+            periodSeconds: 5 #检查间隔
+          imagePullPolicy: Always
+          name: client-yingkangoa
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources: #资源限制
+            #limits: #上限
+            #  cpu: 300m #1个逻辑CPU，分割为1000个豪核心。
+            #  memory: 600Mi
+            #requests: #下限
+            #  cpu: 100m
+            #  memory: 100Mi
+          volumeMounts:
+            - name: host-time
+              readOnly: true
+              mountPath: /etc/localtime
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      # 统一把harbor仓库的凭证，命名为dockerhub-id，无论是生产还是测试环境。
+      imagePullSecrets:
+        - name: dockerhub-id
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yingkang-oa
+    component: client-yingkangoa
+  name: client-yingkangoa
+  namespace: yingkang-oa
+spec:
+  ports:
+    - name: http
+      port: 8080 #svc端口
+      protocol: TCP
+      targetPort: 80 #deploy端口
+      nodePort: 30089 #对外端口，找运维确认
+  selector:
+    app: yingkang-oa
+    component: client-yingkangoa
+    tier: frontend
+  sessionAffinity: None
+  type: NodePort
